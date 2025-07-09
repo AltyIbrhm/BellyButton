@@ -7,25 +7,52 @@ import NotFound from './pages/NotFound';
 function App() {
   return (
     <Router>
-      <nav className="bg-gray-800 p-4 flex items-center justify-between">
-        <Link to="/" className="text-white text-xl font-bold">
-          Dashboard
-        </Link>
-        <div>
-          <Link
-            to="/"
-            className="text-gray-300 hover:text-white px-3 py-2 rounded"
-          >
-            Home
-          </Link>
-        </div>
-      </nav>
-      <main>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+        {/* Header */}
+        <header className="bg-white shadow-lg border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">H</span>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">HealthyBot</h1>
+                  <p className="text-sm text-gray-600">Smart Recipe & Health Assistant</p>
+                </div>
+              </div>
+              <nav className="flex items-center space-x-6">
+                <Link
+                  to="/"
+                  className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200"
+                >
+                  Home
+                </Link>
+                <Link
+                  to="/recipes"
+                  className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200"
+                >
+                  Recipes
+                </Link>
+                <Link
+                  to="/health"
+                  className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200"
+                >
+                  Health Tips
+                </Link>
+              </nav>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+      </div>
     </Router>
   );
 }
