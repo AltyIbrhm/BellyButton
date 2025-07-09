@@ -909,7 +909,7 @@ const Home: React.FC = () => {
                       e.stopPropagation();
                       addMissingIngredients(recipe);
                     }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    className="px-4 py-2 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg hover:from-green-600 hover:to-blue-600 transition-all shadow-md text-sm"
                   >
                     Add Missing to Shopping List
                   </button>
@@ -975,7 +975,7 @@ const Home: React.FC = () => {
                 
                 <button
                   onClick={() => addMissingIngredients(selectedRecipe)}
-                  className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                  className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white font-semibold rounded-lg hover:from-green-600 hover:to-blue-600 transition-all shadow-md"
                 >
                   Add Missing Ingredients to Shopping List
                 </button>
