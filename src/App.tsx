@@ -24,14 +24,7 @@ function App() {
                   <p className="text-sm text-gray-600">Smart Recipe & Health Assistant</p>
                 </div>
               </div>
-              <nav className="flex items-center space-x-6">
-                <Link
-                  to="/"
-                  className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200"
-                >
-                  Home
-                </Link>
-              </nav>
+
             </div>
           </div>
         </header>
