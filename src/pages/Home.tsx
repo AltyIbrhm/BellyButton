@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
+import logo from '../assets/logo.jpg';
 
 interface Ingredient {
   id: string;
@@ -581,6 +582,22 @@ const Home: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header with Logo */}
+      <div className="text-center mb-8">
+        <div className="flex items-center justify-center space-x-4 mb-4">
+          <img 
+            src={logo} 
+            alt="HealthyBot Logo" 
+            className="w-16 h-16 rounded-full object-cover shadow-lg border-4 border-gradient-to-r from-green-400 to-blue-500"
+          />
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+              HealthyBot
+            </h1>
+            <p className="text-gray-600 text-lg">Your AI Kitchen Assistant</p>
+          </div>
+        </div>
+      </div>
       {/* Dietary Restrictions Modal */}
       {showDietaryModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -639,12 +656,12 @@ const Home: React.FC = () => {
         <div className="space-y-6">
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-green-700 to-blue-700 bg-clip-text text-transparent">
                 What's in Your Kitchen?
               </h2>
               <button
                 onClick={() => setShowDietaryModal(true)}
-                className="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                className="px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg hover:from-green-600 hover:to-blue-600 transition-all shadow-md"
               >
                 {dietaryRestrictions.length > 0 ? `Dietary: ${dietaryRestrictions.length}` : 'Set Dietary'}
               </button>
@@ -660,7 +677,7 @@ const Home: React.FC = () => {
                 accept="image/*"
                 multiple
                 onChange={handleImageUpload}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-green-500 file:to-blue-500 file:text-white hover:file:from-green-600 hover:file:to-blue-600"
               />
               {imageAnalysisLoading && (
                 <div className="mt-3 flex items-center space-x-2 text-blue-600">
@@ -763,7 +780,7 @@ const Home: React.FC = () => {
                 </select>
                 <button
                   onClick={addIngredient}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  className="px-6 py-2 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg hover:from-green-600 hover:to-blue-600 transition-all shadow-md"
                 >
                   Add
                 </button>
