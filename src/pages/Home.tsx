@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 interface Ingredient {
   id: string;
   name: string;
   quantity: string;
   category: 'fridge' | 'needed';
-  source: 'manual' | 'image' | 'detected';
+  source: 'manual' | 'image' | 'detected' | 'suggestion';
 }
 
 interface Recipe {
@@ -38,7 +37,6 @@ interface DetectedIngredient {
 type IngredientCategory = 'fridge' | 'needed';
 
 const Home: React.FC = () => {
-  const navigate = useNavigate();
   // State for ingredients
   const [fridgeIngredients, setFridgeIngredients] = useState<Ingredient[]>([]);
   const [neededIngredients, setNeededIngredients] = useState<Ingredient[]>([]);
@@ -229,126 +227,146 @@ const Home: React.FC = () => {
       .sort((a, b) => (b.compatibilityScore || 0) - (a.compatibilityScore || 0));
   };
 
-  // Generate recipes (from ingredients or images)
-  const generateRecipes = async (fromImages = false) => {
-    setRecipeLoading(true);
-    setRecipes([]);
-    setSelectedRecipe(null);
-    
-    // Simulate API call
-    setTimeout(() => {
-      const allRecipes: Recipe[] = [
-        {
-          title: 'Fridge Surprise Frittata',
-          ingredients: ['eggs', 'cheese', 'mixed veggies', 'leftover meats', 'milk'],
-          instructions: [
-            'Preheat oven to 375°F (190°C)',
-            'Whisk eggs and cheese, stir in chopped veggies and meats',
-            'Pour into greased baking dish and bake 25-30 min',
-          ],
-          prepTime: '10 minutes',
-          cookTime: '30 minutes',
-          servings: 4,
-          difficulty: 'easy',
-          cuisine: 'Italian',
-          dietaryTags: ['vegetarian'],
-        },
-        {
-          title: 'Clean-Out-the-Fridge Stir Fry',
-          ingredients: ['rice', 'mixed vegetables', 'soy sauce', 'protein of choice', 'garlic', 'ginger'],
-          instructions: [
-            'Cook rice as directed',
-            'Stir-fry veggies and protein in a wok',
-            'Add rice and soy sauce, stir to combine',
-          ],
-          prepTime: '15 minutes',
-          cookTime: '15 minutes',
-          servings: 3,
-          difficulty: 'medium',
-          cuisine: 'Asian',
-          dietaryTags: ['gluten-free'],
-        },
-        {
-          title: 'Healthy Chicken Stir-Fry',
-          ingredients: ['chicken breast', 'broccoli', 'carrots', 'soy sauce', 'ginger', 'garlic'],
-          instructions: [
-            'Cut chicken into bite-sized pieces',
-            'Heat oil in a large wok or skillet',
-            'Stir-fry chicken until golden brown',
-            'Add vegetables and stir-fry for 3-4 minutes',
-            'Add soy sauce and seasonings',
-          ],
-          prepTime: '15 minutes',
-          cookTime: '10 minutes',
-          servings: 4,
-          difficulty: 'medium',
-          cuisine: 'Asian',
-          dietaryTags: ['gluten-free', 'dairy-free'],
-        },
-        {
-          title: 'Quinoa Buddha Bowl',
-          ingredients: ['quinoa', 'sweet potato', 'kale', 'avocado', 'chickpeas', 'tahini'],
-          instructions: [
-            'Cook quinoa according to package instructions',
-            'Roast sweet potato cubes at 400°F for 25 minutes',
-            'Massage kale with olive oil and lemon juice',
-            'Assemble bowl with quinoa, vegetables, and tahini dressing',
-          ],
-          prepTime: '20 minutes',
-          cookTime: '25 minutes',
-          servings: 2,
-          difficulty: 'easy',
-          cuisine: 'Mediterranean',
-          dietaryTags: ['vegan', 'gluten-free', 'dairy-free'],
-        },
-        {
-          title: 'Tomato Basil Pasta',
-          ingredients: ['pasta', 'tomatoes', 'basil', 'garlic', 'olive oil', 'parmesan'],
-          instructions: [
-            'Cook pasta according to package instructions',
-            'Sauté garlic in olive oil',
-            'Add tomatoes and cook until softened',
-            'Toss with pasta, basil, and parmesan',
-          ],
-          prepTime: '10 minutes',
-          cookTime: '15 minutes',
-          servings: 4,
-          difficulty: 'easy',
-          cuisine: 'Italian',
-          dietaryTags: ['vegetarian'],
-        },
-        {
-          title: 'Mushroom Risotto',
-          ingredients: ['arborio rice', 'mushrooms', 'onions', 'garlic', 'white wine', 'parmesan'],
-          instructions: [
-            'Sauté onions and garlic',
-            'Add rice and toast slightly',
-            'Gradually add broth while stirring',
-            'Add mushrooms and finish with parmesan',
-          ],
-          prepTime: '15 minutes',
-          cookTime: '25 minutes',
-          servings: 3,
-          difficulty: 'hard',
-          cuisine: 'Italian',
-          dietaryTags: ['vegetarian'],
-        },
-      ];
+  // Curated recipe suggestions database
+  const recipeSuggestions: Recipe[] = [
+    {
+      title: 'Mediterranean Quinoa Bowl',
+      ingredients: ['quinoa', 'cherry tomatoes', 'cucumber', 'olives', 'feta cheese', 'olive oil', 'lemon'],
+      instructions: [
+        'Cook quinoa according to package instructions',
+        'Chop vegetables and mix with quinoa',
+        'Add crumbled feta and drizzle with olive oil and lemon',
+      ],
+      prepTime: '15 minutes',
+      cookTime: '20 minutes',
+      servings: 2,
+      difficulty: 'easy',
+      cuisine: 'Mediterranean',
+      dietaryTags: ['vegetarian', 'gluten-free'],
+    },
+    {
+      title: 'Vegan Buddha Bowl',
+      ingredients: ['brown rice', 'sweet potato', 'kale', 'chickpeas', 'avocado', 'tahini', 'sesame seeds'],
+      instructions: [
+        'Cook brown rice and roast sweet potato cubes',
+        'Massage kale with olive oil',
+        'Assemble bowl with all ingredients and tahini dressing',
+      ],
+      prepTime: '20 minutes',
+      cookTime: '30 minutes',
+      servings: 2,
+      difficulty: 'easy',
+      cuisine: 'Asian',
+      dietaryTags: ['vegan', 'gluten-free', 'dairy-free'],
+    },
+    {
+      title: 'Keto Cauliflower Rice Stir-Fry',
+      ingredients: ['cauliflower', 'chicken breast', 'broccoli', 'soy sauce', 'ginger', 'garlic', 'eggs'],
+      instructions: [
+        'Grate cauliflower into rice-like pieces',
+        'Stir-fry chicken and vegetables',
+        'Add cauliflower rice and scramble eggs',
+      ],
+      prepTime: '10 minutes',
+      cookTime: '15 minutes',
+      servings: 3,
+      difficulty: 'medium',
+      cuisine: 'Asian',
+      dietaryTags: ['gluten-free', 'low-carb', 'keto'],
+    },
+    {
+      title: 'Dairy-Free Pasta Primavera',
+      ingredients: ['gluten-free pasta', 'zucchini', 'bell peppers', 'cherry tomatoes', 'olive oil', 'basil', 'nutritional yeast'],
+      instructions: [
+        'Cook gluten-free pasta',
+        'Sauté vegetables in olive oil',
+        'Toss with pasta and nutritional yeast',
+      ],
+      prepTime: '10 minutes',
+      cookTime: '15 minutes',
+      servings: 4,
+      difficulty: 'easy',
+      cuisine: 'Italian',
+      dietaryTags: ['dairy-free', 'gluten-free'],
+    },
+    {
+      title: 'Low-Carb Zucchini Lasagna',
+      ingredients: ['zucchini', 'ground turkey', 'marinara sauce', 'ricotta cheese', 'mozzarella', 'parmesan', 'basil'],
+      instructions: [
+        'Slice zucchini into thin strips',
+        'Layer with turkey, sauce, and cheeses',
+        'Bake until bubbly and golden',
+      ],
+      prepTime: '20 minutes',
+      cookTime: '45 minutes',
+      servings: 6,
+      difficulty: 'medium',
+      cuisine: 'Italian',
+      dietaryTags: ['low-carb', 'gluten-free'],
+    },
+    {
+      title: 'Vegan Chocolate Avocado Mousse',
+      ingredients: ['avocado', 'cocoa powder', 'maple syrup', 'vanilla extract', 'almond milk', 'berries'],
+      instructions: [
+        'Blend avocado with cocoa and sweetener',
+        'Add almond milk for creaminess',
+        'Top with fresh berries',
+      ],
+      prepTime: '10 minutes',
+      cookTime: '0 minutes',
+      servings: 4,
+      difficulty: 'easy',
+      cuisine: 'Dessert',
+      dietaryTags: ['vegan', 'dairy-free', 'gluten-free'],
+    },
+  ];
 
-      setRecipes(allRecipes);
-      
-      // Filter recipes based on available ingredients
-      const availableIngredients = [...fridgeIngredients];
-      const filtered = filterRecipes(allRecipes, availableIngredients);
-      setFilteredRecipes(filtered);
-      
-      if (filtered.length > 0) {
-        setSelectedRecipe(filtered[0]);
-      }
-      
-      setRecipeLoading(false);
-    }, 2000);
+  // Filter recipes based on dietary restrictions
+  const getFilteredSuggestions = () => {
+    if (dietaryRestrictions.length === 0) return recipeSuggestions;
+    return recipeSuggestions.filter(recipe => 
+      dietaryRestrictions.every(restriction => 
+        recipe.dietaryTags.includes(restriction)
+      )
+    );
   };
+
+  // Add missing ingredients to shopping list
+  const addMissingIngredients = (recipe: Recipe) => {
+    const availableIngredients = fridgeIngredients.map(item => item.name.toLowerCase());
+    const missingIngredients = recipe.ingredients.filter(ingredient => 
+      !availableIngredients.some(available => 
+        available.includes(ingredient.toLowerCase()) || 
+        ingredient.toLowerCase().includes(available)
+      )
+    );
+
+    const newNeededIngredients: Ingredient[] = missingIngredients.map(ingredient => ({
+      id: `${Date.now()}-${Math.random()}`,
+      name: ingredient,
+      quantity: '1',
+      category: 'needed' as const,
+      source: 'suggestion',
+    }));
+
+    setNeededIngredients(prev => {
+      const existingNames = prev.map(item => item.name.toLowerCase());
+      const uniqueNewIngredients = newNeededIngredients.filter(
+        item => !existingNames.includes(item.name.toLowerCase())
+      );
+      return [...prev, ...uniqueNewIngredients];
+    });
+  };
+
+  // Load recipe suggestions on component mount and when dietary restrictions change
+  useEffect(() => {
+    const filtered = getFilteredSuggestions();
+    setRecipes(filtered);
+    setFilteredRecipes(filtered);
+    if (filtered.length > 0) {
+      setSelectedRecipe(filtered[0]);
+    }
+  }, [dietaryRestrictions]);
 
   // Chat functions
   const sendChatMessage = async (message: string) => {
@@ -623,42 +641,17 @@ const Home: React.FC = () => {
               Reset Everything
             </button>
 
-            {/* Generate Recipes Button */}
-            <button
-              onClick={() => generateRecipes(false)}
-              disabled={recipeLoading}
-              className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white font-semibold rounded-lg hover:from-green-600 hover:to-blue-600 transition-all disabled:opacity-50"
-            >
-              {recipeLoading ? 'Generating Recipes...' : 'Generate Smart Recipes'}
-            </button>
 
-            {/* Recipe Suggestions Button */}
-            <button
-              onClick={() => navigate('/suggestions', { 
-                state: { 
-                  dietaryRestrictions, 
-                  fridgeIngredients, 
-                  neededIngredients 
-                } 
-              })}
-              className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all"
-            >
-              Browse Recipe Suggestions
-            </button>
           </div>
         </div>
 
-        {/* Right Side - Recipe Display */}
+        {/* Right Side - Recipe Suggestions */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Recommended Recipes ({filteredRecipes.length})
+            Recipe Suggestions ({filteredRecipes.length})
           </h2>
           
-          {recipeLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
-            </div>
-          ) : filteredRecipes.length > 0 ? (
+          {filteredRecipes.length > 0 ? (
             <div className="space-y-4">
               {filteredRecipes.map((recipe, index) => (
                 <div
@@ -672,8 +665,15 @@ const Home: React.FC = () => {
                 >
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="text-xl font-semibold text-gray-900">{recipe.title}</h3>
-                    <div className={`px-2 py-1 rounded text-xs font-semibold ${getCompatibilityColor(recipe.compatibilityScore || 0)}`}>
-                      {Math.round(recipe.compatibilityScore || 0)}% Match
+                    <div className="flex flex-wrap gap-1">
+                      {recipe.dietaryTags.map(tag => (
+                        <span
+                          key={tag}
+                          className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium"
+                        >
+                          {tag.replace('-', ' ')}
+                        </span>
+                      ))}
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
@@ -682,22 +682,27 @@ const Home: React.FC = () => {
                     <span>Servings: {recipe.servings}</span>
                     <span className="capitalize">{recipe.difficulty}</span>
                   </div>
-                  <div className="text-sm text-gray-700">
-                    <strong>Ingredients:</strong> {recipe.ingredients.slice(0, 3).join(', ')}
-                    {recipe.ingredients.length > 3 && '...'}
+                  <div className="text-sm text-gray-700 mb-3">
+                    <strong>Ingredients:</strong> {recipe.ingredients.slice(0, 4).join(', ')}
+                    {recipe.ingredients.length > 4 && '...'}
                   </div>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addMissingIngredients(recipe);
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    Add Missing to Shopping List
+                  </button>
                 </div>
               ))}
-            </div>
-          ) : recipes.length > 0 ? (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🔍</div>
-              <p className="text-gray-500">No recipes match your available ingredients. Try adding more ingredients!</p>
             </div>
           ) : (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🍽️</div>
-              <p className="text-gray-500">Add ingredients or upload images and generate recipes to see recommendations</p>
+              <p className="text-gray-500">No recipe suggestions available for your dietary preferences. Try adjusting your dietary restrictions!</p>
             </div>
           )}
 
@@ -706,8 +711,15 @@ const Home: React.FC = () => {
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold text-gray-900">{selectedRecipe.title}</h3>
-                <div className={`px-3 py-1 rounded text-sm font-semibold ${getCompatibilityColor(selectedRecipe.compatibilityScore || 0)}`}>
-                  {Math.round(selectedRecipe.compatibilityScore || 0)}% Match
+                <div className="flex flex-wrap gap-2">
+                  {selectedRecipe.dietaryTags.map(tag => (
+                    <span
+                      key={tag}
+                      className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium"
+                    >
+                      {tag.replace('-', ' ')}
+                    </span>
+                  ))}
                 </div>
               </div>
               <div className="space-y-3">
@@ -735,6 +747,13 @@ const Home: React.FC = () => {
                     ))}
                   </ol>
                 </div>
+                
+                <button
+                  onClick={() => addMissingIngredients(selectedRecipe)}
+                  className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Add Missing Ingredients to Shopping List
+                </button>
               </div>
             </div>
           )}

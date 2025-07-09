@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
-import RecipeSuggestions from './pages/RecipeSuggestions';
 
 function App() {
   return (
@@ -29,12 +28,6 @@ function App() {
                 >
                   Home
                 </Link>
-                <Link
-                  to="/suggestions"
-                  className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200"
-                >
-                  Recipe Suggestions
-                </Link>
               </nav>
             </div>
           </div>
@@ -44,7 +37,6 @@ function App() {
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/suggestions" element={<RecipeSuggestions />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
