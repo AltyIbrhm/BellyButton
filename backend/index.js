@@ -12,7 +12,6 @@ app.use(express.json());
 // Log all incoming requests
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-  console.log('Headers:', req.headers);
   next();
 });
 
@@ -28,29 +27,39 @@ app.get('/api/dashboard', (req, res) => {
   });
 });
 
-// Test OpenAI API key endpoint
-app.get('/api/test-openai', async (req, res) => {
+// Chat endpoint for OpenAI
+app.post('/api/chat', async (req, res) => {
   try {
     const apiKey = process.env.OPENAI_API_KEY;
-    console.log('OPENAI_API_KEY present:', !!apiKey);
-    if (apiKey) {
-      console.log('OPENAI_API_KEY (masked):', apiKey.slice(0, 8) + '...' + apiKey.slice(-5));
-    }
+    const { message } = req.body;
     if (!apiKey) {
-      console.error('OPENAI_API_KEY not set in backend .env');
       return res.status(400).json({ error: 'OPENAI_API_KEY not set in backend .env' });
     }
-    // Example: List OpenAI models
-    console.log('Sending request to OpenAI...');
-    const response = await axios.get('https://api.openai.com/v1/models', {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
+    if (!message) {
+      return res.status(400).json({ error: 'No message provided' });
+    }
+    // Call OpenAI Chat API (gpt-3.5-turbo)
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'system', content: 'You are a helpful assistant.' },
+          { role: 'user', content: message },
+        ],
+        max_tokens: 256,
       },
-    });
-    console.log('OpenAI response status:', response.status);
-    res.json({ success: true, data: response.data });
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    const reply = response.data.choices[0].message.content;
+    res.json({ reply });
   } catch (error) {
-    console.error('Error calling OpenAI:', error.message);
+    console.error('Error calling OpenAI Chat API:', error.message);
     if (error.response) {
       console.error('OpenAI error response:', error.response.data);
     }
