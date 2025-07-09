@@ -368,6 +368,137 @@ const Home: React.FC = () => {
     }
   }, [dietaryRestrictions]);
 
+  // Generate recipes based on uploaded images
+  const generateRecipesFromImages = async () => {
+    if (images.length === 0) return;
+    
+    setRecipeLoading(true);
+    setRecipes([]);
+    setSelectedRecipe(null);
+    
+    // Simulate API call
+    setTimeout(() => {
+      const imageBasedRecipes: Recipe[] = [
+        {
+          title: 'Fridge Surprise Frittata',
+          ingredients: ['eggs', 'cheese', 'mixed veggies', 'leftover meats', 'milk'],
+          instructions: [
+            'Preheat oven to 375°F (190°C)',
+            'Whisk eggs and cheese, stir in chopped veggies and meats',
+            'Pour into greased baking dish and bake 25-30 min',
+          ],
+          prepTime: '10 minutes',
+          cookTime: '30 minutes',
+          servings: 4,
+          difficulty: 'easy',
+          cuisine: 'Italian',
+          dietaryTags: ['vegetarian'],
+        },
+        {
+          title: 'Clean-Out-the-Fridge Stir Fry',
+          ingredients: ['rice', 'mixed vegetables', 'soy sauce', 'protein of choice', 'garlic', 'ginger'],
+          instructions: [
+            'Cook rice as directed',
+            'Stir-fry veggies and protein in a wok',
+            'Add rice and soy sauce, stir to combine',
+          ],
+          prepTime: '15 minutes',
+          cookTime: '15 minutes',
+          servings: 3,
+          difficulty: 'medium',
+          cuisine: 'Asian',
+          dietaryTags: ['gluten-free'],
+        },
+        {
+          title: 'Healthy Chicken Stir-Fry',
+          ingredients: ['chicken breast', 'broccoli', 'carrots', 'soy sauce', 'ginger', 'garlic'],
+          instructions: [
+            'Cut chicken into bite-sized pieces',
+            'Heat oil in a large wok or skillet',
+            'Stir-fry chicken until golden brown',
+            'Add vegetables and stir-fry for 3-4 minutes',
+            'Add soy sauce and seasonings',
+          ],
+          prepTime: '15 minutes',
+          cookTime: '10 minutes',
+          servings: 4,
+          difficulty: 'medium',
+          cuisine: 'Asian',
+          dietaryTags: ['gluten-free', 'dairy-free'],
+        },
+        {
+          title: 'Quinoa Buddha Bowl',
+          ingredients: ['quinoa', 'sweet potato', 'kale', 'avocado', 'chickpeas', 'tahini'],
+          instructions: [
+            'Cook quinoa according to package instructions',
+            'Roast sweet potato cubes at 400°F for 25 minutes',
+            'Massage kale with olive oil and lemon juice',
+            'Assemble bowl with quinoa, vegetables, and tahini dressing',
+          ],
+          prepTime: '20 minutes',
+          cookTime: '25 minutes',
+          servings: 2,
+          difficulty: 'easy',
+          cuisine: 'Mediterranean',
+          dietaryTags: ['vegan', 'gluten-free', 'dairy-free'],
+        },
+        {
+          title: 'Tomato Basil Pasta',
+          ingredients: ['pasta', 'tomatoes', 'basil', 'garlic', 'olive oil', 'parmesan'],
+          instructions: [
+            'Cook pasta according to package instructions',
+            'Sauté garlic in olive oil',
+            'Add tomatoes and cook until softened',
+            'Toss with pasta, basil, and parmesan',
+          ],
+          prepTime: '10 minutes',
+          cookTime: '15 minutes',
+          servings: 4,
+          difficulty: 'easy',
+          cuisine: 'Italian',
+          dietaryTags: ['vegetarian'],
+        },
+        {
+          title: 'Mushroom Risotto',
+          ingredients: ['arborio rice', 'mushrooms', 'onions', 'garlic', 'white wine', 'parmesan'],
+          instructions: [
+            'Sauté onions and garlic',
+            'Add rice and toast slightly',
+            'Gradually add broth while stirring',
+            'Add mushrooms and finish with parmesan',
+          ],
+          prepTime: '15 minutes',
+          cookTime: '25 minutes',
+          servings: 3,
+          difficulty: 'hard',
+          cuisine: 'Italian',
+          dietaryTags: ['vegetarian'],
+        },
+      ];
+
+      // Filter recipes based on dietary restrictions and add compatibility scores
+      const filteredImageRecipes = (dietaryRestrictions.length === 0 
+        ? imageBasedRecipes 
+        : imageBasedRecipes.filter(recipe => 
+            dietaryRestrictions.every(restriction => 
+              recipe.dietaryTags.includes(restriction)
+            )
+          )).map(recipe => ({
+            ...recipe,
+            compatibilityScore: calculateRecipeScore(recipe, fridgeIngredients)
+          }));
+
+      setRecipes(filteredImageRecipes);
+      setFilteredRecipes(filteredImageRecipes);
+      
+      if (filteredImageRecipes.length > 0) {
+        setSelectedRecipe(filteredImageRecipes[0]);
+      }
+      
+      setRecipeLoading(false);
+    }, 2000);
+  };
+
   // Chat functions
   const sendChatMessage = async (message: string) => {
     const userMessage: ChatMessage = {
@@ -514,6 +645,17 @@ const Home: React.FC = () => {
                   ))}
                 </div>
               )}
+              
+              {/* Generate Recipes from Images Button */}
+              {images.length > 0 && (
+                <button
+                  onClick={generateRecipesFromImages}
+                  disabled={recipeLoading}
+                  className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50"
+                >
+                  {recipeLoading ? 'Generating Recipes from Images...' : 'Generate Recipes from Images'}
+                </button>
+              )}
             </div>
 
             {/* Add Ingredient Form */}
@@ -645,10 +787,12 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Side - Recipe Suggestions */}
+        {/* Right Side - Recipe Display */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Recipe Suggestions ({filteredRecipes.length})
+            {recipeLoading ? 'Generating Recipes...' : 
+             recipes.length > 0 && recipes[0].title === 'Mediterranean Quinoa Bowl' ? 
+             'Recipe Suggestions' : 'Recommended Recipes'} ({filteredRecipes.length})
           </h2>
           
           {filteredRecipes.length > 0 ? (
@@ -666,14 +810,22 @@ const Home: React.FC = () => {
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="text-xl font-semibold text-gray-900">{recipe.title}</h3>
                     <div className="flex flex-wrap gap-1">
-                      {recipe.dietaryTags.map(tag => (
-                        <span
-                          key={tag}
-                          className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium"
-                        >
-                          {tag.replace('-', ' ')}
-                        </span>
-                      ))}
+                      {recipes.length > 0 && recipes[0].title === 'Mediterranean Quinoa Bowl' ? (
+                        // Show dietary tags for recipe suggestions
+                        recipe.dietaryTags.map(tag => (
+                          <span
+                            key={tag}
+                            className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium"
+                          >
+                            {tag.replace('-', ' ')}
+                          </span>
+                        ))
+                      ) : (
+                        // Show compatibility score for image-based recipes
+                        <div className={`px-2 py-1 rounded text-xs font-semibold ${getCompatibilityColor(recipe.compatibilityScore || 0)}`}>
+                          {Math.round(recipe.compatibilityScore || 0)}% Match
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
@@ -712,14 +864,22 @@ const Home: React.FC = () => {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold text-gray-900">{selectedRecipe.title}</h3>
                 <div className="flex flex-wrap gap-2">
-                  {selectedRecipe.dietaryTags.map(tag => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium"
-                    >
-                      {tag.replace('-', ' ')}
-                    </span>
-                  ))}
+                  {recipes.length > 0 && recipes[0].title === 'Mediterranean Quinoa Bowl' ? (
+                    // Show dietary tags for recipe suggestions
+                    selectedRecipe.dietaryTags.map(tag => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium"
+                      >
+                        {tag.replace('-', ' ')}
+                      </span>
+                    ))
+                  ) : (
+                    // Show compatibility score for image-based recipes
+                    <div className={`px-3 py-1 rounded text-sm font-semibold ${getCompatibilityColor(selectedRecipe.compatibilityScore || 0)}`}>
+                      {Math.round(selectedRecipe.compatibilityScore || 0)}% Match
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="space-y-3">
