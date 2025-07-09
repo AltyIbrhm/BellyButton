@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface Ingredient {
   id: string;
@@ -19,6 +20,7 @@ interface Recipe {
   difficulty: 'easy' | 'medium' | 'hard';
   cuisine: string;
   compatibilityScore?: number;
+  dietaryTags: string[];
 }
 
 interface ChatMessage {
@@ -36,6 +38,7 @@ interface DetectedIngredient {
 type IngredientCategory = 'fridge' | 'needed';
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
   // State for ingredients
   const [fridgeIngredients, setFridgeIngredients] = useState<Ingredient[]>([]);
   const [neededIngredients, setNeededIngredients] = useState<Ingredient[]>([]);
@@ -59,6 +62,10 @@ const Home: React.FC = () => {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [recipeLoading, setRecipeLoading] = useState(false);
   const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
+
+  // State for dietary restrictions
+  const [showDietaryModal, setShowDietaryModal] = useState(true);
+  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
 
   // State for chatbot
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -200,14 +207,25 @@ const Home: React.FC = () => {
     return (matchingIngredients.length / recipeIngredients.length) * 100;
   };
 
-  // Filter recipes based on available ingredients
+  // Filter recipes based on available ingredients and dietary restrictions
   const filterRecipes = (recipes: Recipe[], availableIngredients: Ingredient[]): Recipe[] => {
     return recipes
       .map(recipe => ({
         ...recipe,
         compatibilityScore: calculateRecipeScore(recipe, availableIngredients),
       }))
-      .filter(recipe => recipe.compatibilityScore > 30) // Only show recipes with >30% compatibility
+      .filter(recipe => {
+        // Check ingredient compatibility
+        const ingredientCompatible = recipe.compatibilityScore > 30;
+        
+        // Check dietary restrictions
+        const dietaryCompatible = dietaryRestrictions.length === 0 || 
+          dietaryRestrictions.every(restriction => 
+            recipe.dietaryTags.includes(restriction)
+          );
+        
+        return ingredientCompatible && dietaryCompatible;
+      })
       .sort((a, b) => (b.compatibilityScore || 0) - (a.compatibilityScore || 0));
   };
 
@@ -233,6 +251,7 @@ const Home: React.FC = () => {
           servings: 4,
           difficulty: 'easy',
           cuisine: 'Italian',
+          dietaryTags: ['vegetarian'],
         },
         {
           title: 'Clean-Out-the-Fridge Stir Fry',
@@ -247,6 +266,7 @@ const Home: React.FC = () => {
           servings: 3,
           difficulty: 'medium',
           cuisine: 'Asian',
+          dietaryTags: ['gluten-free'],
         },
         {
           title: 'Healthy Chicken Stir-Fry',
@@ -263,6 +283,7 @@ const Home: React.FC = () => {
           servings: 4,
           difficulty: 'medium',
           cuisine: 'Asian',
+          dietaryTags: ['gluten-free', 'dairy-free'],
         },
         {
           title: 'Quinoa Buddha Bowl',
@@ -278,6 +299,7 @@ const Home: React.FC = () => {
           servings: 2,
           difficulty: 'easy',
           cuisine: 'Mediterranean',
+          dietaryTags: ['vegan', 'gluten-free', 'dairy-free'],
         },
         {
           title: 'Tomato Basil Pasta',
@@ -293,6 +315,7 @@ const Home: React.FC = () => {
           servings: 4,
           difficulty: 'easy',
           cuisine: 'Italian',
+          dietaryTags: ['vegetarian'],
         },
         {
           title: 'Mushroom Risotto',
@@ -308,6 +331,7 @@ const Home: React.FC = () => {
           servings: 3,
           difficulty: 'hard',
           cuisine: 'Italian',
+          dietaryTags: ['vegetarian'],
         },
       ];
 
@@ -364,14 +388,74 @@ const Home: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Dietary Restrictions Modal */}
+      {showDietaryModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Welcome to HealthyBot!</h3>
+              <p className="text-gray-600">Let's personalize your recipe recommendations</p>
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="font-semibold text-gray-800 mb-3">Select your dietary preferences:</h4>
+              
+              {[
+                { id: 'vegetarian', label: 'Vegetarian', description: 'No meat, fish, or poultry' },
+                { id: 'vegan', label: 'Vegan', description: 'No animal products' },
+                { id: 'gluten-free', label: 'Gluten-Free', description: 'No wheat, barley, or rye' },
+                { id: 'dairy-free', label: 'Dairy-Free', description: 'No milk, cheese, or dairy products' },
+                { id: 'low-carb', label: 'Low-Carb', description: 'Reduced carbohydrate intake' },
+                { id: 'keto', label: 'Keto', description: 'Very low-carb, high-fat diet' },
+              ].map((diet) => (
+                <label key={diet.id} className="flex items-start space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={dietaryRestrictions.includes(diet.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setDietaryRestrictions(prev => [...prev, diet.id]);
+                      } else {
+                        setDietaryRestrictions(prev => prev.filter(r => r !== diet.id));
+                      }
+                    }}
+                    className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                  />
+                  <div className="flex-1">
+                    <span className="font-medium text-gray-900">{diet.label}</span>
+                    <p className="text-sm text-gray-500">{diet.description}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowDietaryModal(false)}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Start Cooking
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Left Side - Ingredient Input & Image Upload */}
         <div className="space-y-6">
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              What's in Your Kitchen?
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">
+                What's in Your Kitchen?
+              </h2>
+              <button
+                onClick={() => setShowDietaryModal(true)}
+                className="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+              >
+                {dietaryRestrictions.length > 0 ? `Dietary: ${dietaryRestrictions.length}` : 'Set Dietary'}
+              </button>
+            </div>
             
             {/* Image Upload */}
             <div className="mb-6">
@@ -546,6 +630,20 @@ const Home: React.FC = () => {
               className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white font-semibold rounded-lg hover:from-green-600 hover:to-blue-600 transition-all disabled:opacity-50"
             >
               {recipeLoading ? 'Generating Recipes...' : 'Generate Smart Recipes'}
+            </button>
+
+            {/* Recipe Suggestions Button */}
+            <button
+              onClick={() => navigate('/suggestions', { 
+                state: { 
+                  dietaryRestrictions, 
+                  fridgeIngredients, 
+                  neededIngredients 
+                } 
+              })}
+              className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all"
+            >
+              Browse Recipe Suggestions
             </button>
           </div>
         </div>
