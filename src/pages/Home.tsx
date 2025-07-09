@@ -73,6 +73,7 @@ const Home: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatOpen, setChatOpen] = useState(false);
+  const [chatExpanded, setChatExpanded] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -1013,7 +1014,7 @@ const Home: React.FC = () => {
 
         {/* Chat Window */}
         {chatOpen && (
-          <div className="w-96 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col">
+          <div className={`${chatExpanded ? 'w-[600px] h-[500px]' : 'w-96 h-96'} bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col transition-all duration-300`}>
             {/* Chat Header */}
             <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white p-4 rounded-t-lg flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -1024,12 +1025,29 @@ const Home: React.FC = () => {
                 />
                 <span className="font-semibold">HealthyBot Assistant</span>
               </div>
-              <button
-                onClick={() => setChatOpen(false)}
-                className="text-white hover:text-gray-200"
-              >
-                ×
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setChatExpanded(!chatExpanded)}
+                  className="text-white hover:text-gray-200 p-1"
+                  title={chatExpanded ? "Collapse" : "Expand"}
+                >
+                  {chatExpanded ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    </svg>
+                  )}
+                </button>
+                <button
+                  onClick={() => setChatOpen(false)}
+                  className="text-white hover:text-gray-200"
+                >
+                  ×
+                </button>
+              </div>
             </div>
 
             {/* Chat Messages */}
