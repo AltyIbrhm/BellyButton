@@ -55,6 +55,8 @@ const Home: React.FC = () => {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imageAnalysisLoading, setImageAnalysisLoading] = useState(false);
   const [imageAnalysisMessage, setImageAnalysisMessage] = useState<string | null>(null);
+  const [debugOpen, setDebugOpen] = useState(false);
+  const [imageAnalysisDebug, setImageAnalysisDebug] = useState<string | null>(null);
 
   // State for recipes
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -106,6 +108,10 @@ const Home: React.FC = () => {
       }
 
       const data = await response.json();
+      setImageAnalysisDebug(
+        `API Response:\n${JSON.stringify(data, null, 2)}\n` +
+        (data.rawResponse ? `\nRaw OpenAI Response:\n${data.rawResponse}` : '')
+      );
       
       if (!data.success) {
         throw new Error(data.message || 'Failed to analyze image');
@@ -118,6 +124,7 @@ const Home: React.FC = () => {
         quantity: ingredient.quantity || '1',
       }));
     } catch (error) {
+      setImageAnalysisDebug(`Error: ${error instanceof Error ? error.message : String(error)}`);
       console.error('Error analyzing image:', error);
       // Return empty array if analysis fails
       return [];
@@ -160,6 +167,7 @@ const Home: React.FC = () => {
     // Analyze each uploaded image
     setImageAnalysisLoading(true);
     setImageAnalysisMessage(null);
+    setImageAnalysisDebug(null); // Clear debug info at start
     
     for (const file of files) {
       try {
@@ -683,6 +691,22 @@ const Home: React.FC = () => {
               )}
               {imageAnalysisMessage && (
                 <p className="text-sm text-gray-500 mt-3">{imageAnalysisMessage}</p>
+              )}
+              {imageAnalysisDebug && (
+                <div className="mt-3">
+                  <button
+                    className="text-xs text-blue-600 underline mb-1"
+                    onClick={() => setDebugOpen(v => !v)}
+                    type="button"
+                  >
+                    {debugOpen ? 'Hide' : 'Show'} Debug Console
+                  </button>
+                  {debugOpen && (
+                    <pre className="bg-gray-100 text-xs p-2 rounded max-h-64 overflow-auto border border-gray-300">
+                      {imageAnalysisDebug}
+                    </pre>
+                  )}
+                </div>
               )}
               
               {/* Generate Recipes from Images Button */}
