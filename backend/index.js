@@ -100,7 +100,7 @@ app.post('/api/analyze-image', upload.single('image'), async (req, res) => {
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
-        model: 'gpt-4-vision-preview',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'user',
@@ -145,7 +145,15 @@ app.post('/api/analyze-image', upload.single('image'), async (req, res) => {
     // Try to parse the JSON response
     let ingredients = [];
     try {
-      ingredients = JSON.parse(reply);
+      // Remove markdown code blocks if present
+      let cleanedReply = reply.trim();
+      if (cleanedReply.startsWith('```json')) {
+        cleanedReply = cleanedReply.replace(/```json\s*/, '').replace(/```\s*$/, '');
+      } else if (cleanedReply.startsWith('```')) {
+        cleanedReply = cleanedReply.replace(/```\s*/, '').replace(/```\s*$/, '');
+      }
+      
+      ingredients = JSON.parse(cleanedReply);
     } catch (parseError) {
       console.error('Failed to parse OpenAI response as JSON:', reply);
       // Fallback: try to extract ingredients from text response
