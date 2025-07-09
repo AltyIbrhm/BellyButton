@@ -107,10 +107,10 @@ function App() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return '#4caf50';
-      case 'rejected': return '#f44336';
-      case 'pending': return '#ff9800';
-      default: return '#757575';
+      case 'approved': return '#10b981';
+      case 'rejected': return '#ef4444';
+      case 'pending': return '#f59e0b';
+      default: return '#6b7280';
     }
   };
 
@@ -123,33 +123,65 @@ function App() {
     }
   };
 
+  const getActionIcon = (action: string) => {
+    switch (action.toLowerCase()) {
+      case 'created': return '📝';
+      case 'approved': return '✅';
+      case 'rejected': return '❌';
+      case 'updated': return '🔄';
+      default: return '📋';
+    }
+  };
+
   const filteredAuditLogs = selectedInvoice 
     ? auditLogs.filter(log => log.invoiceId === selectedInvoice.id)
     : auditLogs;
 
+  const totalAmount = invoices.reduce((sum, invoice) => sum + invoice.amount, 0);
+  const pendingAmount = invoices
+    .filter(invoice => invoice.status === 'pending')
+    .reduce((sum, invoice) => sum + invoice.amount, 0);
+
   return (
     <div className="App">
       <header className="App-header">
-        <h1>📋 Invoice Audit System</h1>
-        <p>Manage and audit your invoices with full transparency</p>
+        <div className="header-content">
+          <h1>📋 Invoice Audit System</h1>
+          <p>Manage and audit your invoices with full transparency</p>
+          <div className="header-stats">
+            <span className="header-stat">
+              <strong>{invoices.length}</strong> Invoices
+            </span>
+            <span className="header-stat">
+              <strong>${totalAmount.toLocaleString()}</strong> Total
+            </span>
+            <span className="header-stat">
+              <strong>${pendingAmount.toLocaleString()}</strong> Pending
+            </span>
+          </div>
+        </div>
       </header>
 
       <main className="App-main">
         <div className="dashboard">
           <div className="stats">
             <div className="stat-card">
+              <div className="stat-icon">📊</div>
               <h3>Total Invoices</h3>
               <p>{invoices.length}</p>
             </div>
             <div className="stat-card">
+              <div className="stat-icon">⏳</div>
               <h3>Pending</h3>
               <p>{invoices.filter(inv => inv.status === 'pending').length}</p>
             </div>
             <div className="stat-card">
+              <div className="stat-icon">✅</div>
               <h3>Approved</h3>
               <p>{invoices.filter(inv => inv.status === 'approved').length}</p>
             </div>
             <div className="stat-card">
+              <div className="stat-icon">❌</div>
               <h3>Rejected</h3>
               <p>{invoices.filter(inv => inv.status === 'rejected').length}</p>
             </div>
@@ -157,7 +189,14 @@ function App() {
 
           <div className="content">
             <div className="invoices-section">
-              <h2>📄 Invoices</h2>
+              <div className="section-header">
+                <h2>📄 Invoices</h2>
+                <div className="section-actions">
+                  <button className="action-btn">
+                    <span>➕</span> Add Invoice
+                  </button>
+                </div>
+              </div>
               <div className="invoices-grid">
                 {invoices.map(invoice => (
                   <div 
@@ -176,7 +215,7 @@ function App() {
                     </div>
                     <div className="invoice-details">
                       <p><strong>Vendor:</strong> {invoice.vendor}</p>
-                      <p><strong>Amount:</strong> ${invoice.amount.toFixed(2)}</p>
+                      <p><strong>Amount:</strong> ${invoice.amount.toLocaleString()}</p>
                       <p><strong>Date:</strong> {invoice.date}</p>
                       <p><strong>Description:</strong> {invoice.description}</p>
                     </div>
@@ -210,33 +249,48 @@ function App() {
             </div>
 
             <div className="audit-section">
-              <div className="audit-header">
+              <div className="section-header">
                 <h2>📊 Audit Trail</h2>
-                <button 
-                  onClick={() => setShowAuditModal(!showAuditModal)}
-                  className="toggle-btn"
-                >
-                  {showAuditModal ? 'Hide Details' : 'Show Details'}
-                </button>
+                <div className="section-actions">
+                  <button 
+                    onClick={() => setShowAuditModal(!showAuditModal)}
+                    className="toggle-btn"
+                  >
+                    {showAuditModal ? '👁️ Hide Details' : '👁️ Show Details'}
+                  </button>
+                </div>
               </div>
               
               <div className="audit-logs">
-                {filteredAuditLogs.map(log => (
-                  <div key={log.id} className="audit-log">
-                    <div className="log-header">
-                      <span className="log-action">{log.action.toUpperCase()}</span>
-                      <span className="log-timestamp">
-                        {new Date(log.timestamp).toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="log-details">
-                      <p><strong>User:</strong> {log.user}</p>
-                      {showAuditModal && (
-                        <p><strong>Details:</strong> {log.details}</p>
-                      )}
-                    </div>
+                {filteredAuditLogs.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-icon">📋</div>
+                    <p>No audit logs found</p>
+                    <small>Select an invoice to view its audit trail</small>
                   </div>
-                ))}
+                ) : (
+                  filteredAuditLogs.map(log => (
+                    <div key={log.id} className="audit-log">
+                      <div className="log-header">
+                        <div className="log-action-group">
+                          <span className="log-action-icon">
+                            {getActionIcon(log.action)}
+                          </span>
+                          <span className="log-action">{log.action.toUpperCase()}</span>
+                        </div>
+                        <span className="log-timestamp">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="log-details">
+                        <p><strong>User:</strong> {log.user}</p>
+                        {showAuditModal && (
+                          <p><strong>Details:</strong> {log.details}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
