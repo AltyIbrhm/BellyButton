@@ -89,7 +89,7 @@ const Home: React.FC = () => {
     return () => newPreviews.forEach(url => URL.revokeObjectURL(url));
   }, [images]);
 
-  // Real image analysis function using OpenAI Vision API with fallback
+  // Real image analysis function using OpenAI Vision API
   const analyzeImage = async (file: File): Promise<DetectedIngredient[]> => {
     try {
       const formData = new FormData();
@@ -118,32 +118,8 @@ const Home: React.FC = () => {
       }));
     } catch (error) {
       console.error('Error analyzing image:', error);
-      
-      // Fallback to mock data for testing
-      const mockDetections: DetectedIngredient[][] = [
-        [
-          { name: 'tomatoes', confidence: 0.95, quantity: '4 medium' },
-          { name: 'onions', confidence: 0.87, quantity: '2 large' },
-          { name: 'garlic', confidence: 0.92, quantity: '3 cloves' },
-          { name: 'bell peppers', confidence: 0.78, quantity: '2 medium' },
-        ],
-        [
-          { name: 'chicken breast', confidence: 0.91, quantity: '2 pieces' },
-          { name: 'broccoli', confidence: 0.85, quantity: '1 head' },
-          { name: 'carrots', confidence: 0.88, quantity: '3 medium' },
-          { name: 'mushrooms', confidence: 0.76, quantity: '8 oz' },
-        ],
-        [
-          { name: 'eggs', confidence: 0.94, quantity: '6 large' },
-          { name: 'milk', confidence: 0.89, quantity: '1 cup' },
-          { name: 'cheese', confidence: 0.82, quantity: '1 cup shredded' },
-          { name: 'spinach', confidence: 0.79, quantity: '2 cups' },
-        ],
-      ];
-
-      // Return mock data for testing
-      const index = file.name.length % mockDetections.length;
-      return mockDetections[index];
+      // Return empty array if analysis fails - no more hardcoded data
+      return [];
     }
   };
 
@@ -187,6 +163,11 @@ const Home: React.FC = () => {
       try {
         const detectedIngredients = await analyzeImage(file);
         
+        if (detectedIngredients.length === 0) {
+          console.log('No ingredients detected in image or analysis failed');
+          // You could add a user notification here
+        }
+        
         // Add detected ingredients to fridge
         const newIngredients: Ingredient[] = detectedIngredients
           .filter(item => item.confidence > 0.7) // Only high confidence detections
@@ -208,6 +189,7 @@ const Home: React.FC = () => {
         });
       } catch (error) {
         console.error('Error analyzing image:', error);
+        // You could add a user notification here for failed analysis
       }
     }
     
