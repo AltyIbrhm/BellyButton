@@ -1,24 +1,32 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
+import Home from './pages/Home';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Welcome to React</h1>
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <nav className="bg-gray-800 p-4 flex items-center justify-between">
+        <Link to="/" className="text-white text-xl font-bold">
+          Dashboard
+        </Link>
+        <div>
+          <Link
+            to="/"
+            className="text-gray-300 hover:text-white px-3 py-2 rounded"
+          >
+            Home
+          </Link>
+        </div>
+      </nav>
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </Router>
   );
 }
 
