@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const multer = require('multer');
 require('dotenv').config();
 
 const app = express();
@@ -60,6 +61,105 @@ app.post('/api/chat', async (req, res) => {
     res.json({ reply });
   } catch (error) {
     console.error('Error calling OpenAI Chat API:', error.message);
+    if (error.response) {
+      console.error('OpenAI error response:', error.response.data);
+    }
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      ...(error.response && { openaiError: error.response.data }),
+    });
+  }
+});
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+});
+
+// Image analysis endpoint using OpenAI Vision
+app.post('/api/analyze-image', upload.single('image'), async (req, res) => {
+  try {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return res.status(400).json({ error: 'OPENAI_API_KEY not set in backend .env' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image file provided' });
+    }
+
+    // Convert image to base64
+    const base64Image = req.file.buffer.toString('base64');
+    const mimeType = req.file.mimetype;
+
+    // Call OpenAI Vision API
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-4-vision-preview',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Analyze this fridge image and extract all food ingredients you can see. 
+                Respond with a JSON array of objects, each containing:
+                - name: the ingredient name
+                - quantity: estimated quantity (e.g., "2 medium", "1 cup", "3 pieces")
+                - confidence: confidence level (0.0 to 1.0)
+                
+                Example response format:
+                [
+                  {"name": "tomatoes", "quantity": "4 medium", "confidence": 0.95},
+                  {"name": "milk", "quantity": "1 gallon", "confidence": 0.88}
+                ]
+                
+                Only include ingredients you are confident about. If the fridge appears empty or you can't clearly identify ingredients, return an empty array.`
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:${mimeType};base64,${base64Image}`
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: 500,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const reply = response.data.choices[0].message.content;
+    
+    // Try to parse the JSON response
+    let ingredients = [];
+    try {
+      ingredients = JSON.parse(reply);
+    } catch (parseError) {
+      console.error('Failed to parse OpenAI response as JSON:', reply);
+      // Fallback: try to extract ingredients from text response
+      ingredients = [];
+    }
+
+    res.json({ 
+      success: true, 
+      ingredients,
+      rawResponse: reply 
+    });
+
+  } catch (error) {
+    console.error('Error calling OpenAI Vision API:', error.message);
     if (error.response) {
       console.error('OpenAI error response:', error.response.data);
     }

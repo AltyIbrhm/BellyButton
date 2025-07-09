@@ -20,7 +20,7 @@ interface Ingredient {
   name: string;
   quantity: string;
   category: 'fridge' | 'needed';
-  source: 'manual' | 'image' | 'detected';
+  source: 'manual' | 'image' | 'detected' | 'suggestion';
 }
 
 const RecipeSuggestions: React.FC = () => {

@@ -89,36 +89,38 @@ const Home: React.FC = () => {
     return () => newPreviews.forEach(url => URL.revokeObjectURL(url));
   }, [images]);
 
-  // Mock image analysis function
+  // Real image analysis function using OpenAI Vision API
   const analyzeImage = async (file: File): Promise<DetectedIngredient[]> => {
-    // Simulate AI image analysis
-    const mockDetections: DetectedIngredient[][] = [
-      [
-        { name: 'tomatoes', confidence: 0.95, quantity: '4 medium' },
-        { name: 'onions', confidence: 0.87, quantity: '2 large' },
-        { name: 'garlic', confidence: 0.92, quantity: '3 cloves' },
-        { name: 'bell peppers', confidence: 0.78, quantity: '2 medium' },
-      ],
-      [
-        { name: 'chicken breast', confidence: 0.91, quantity: '2 pieces' },
-        { name: 'broccoli', confidence: 0.85, quantity: '1 head' },
-        { name: 'carrots', confidence: 0.88, quantity: '3 medium' },
-        { name: 'mushrooms', confidence: 0.76, quantity: '8 oz' },
-      ],
-      [
-        { name: 'eggs', confidence: 0.94, quantity: '6 large' },
-        { name: 'milk', confidence: 0.89, quantity: '1 cup' },
-        { name: 'cheese', confidence: 0.82, quantity: '1 cup shredded' },
-        { name: 'spinach', confidence: 0.79, quantity: '2 cups' },
-      ],
-    ];
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
 
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Return random detection set based on file name
-    const index = file.name.length % mockDetections.length;
-    return mockDetections[index];
+      const response = await fetch('http://localhost:3000/api/analyze-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to analyze image');
+      }
+
+      // Convert the API response to our DetectedIngredient format
+      return data.ingredients.map((ingredient: any) => ({
+        name: ingredient.name,
+        confidence: ingredient.confidence || 0.8,
+        quantity: ingredient.quantity || '1',
+      }));
+    } catch (error) {
+      console.error('Error analyzing image:', error);
+      // Fallback to empty array if analysis fails
+      return [];
+    }
   };
 
   // Add ingredient
@@ -621,7 +623,7 @@ const Home: React.FC = () => {
               {imageAnalysisLoading && (
                 <div className="mt-3 flex items-center space-x-2 text-blue-600">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                  <span className="text-sm">Analyzing images for ingredients...</span>
+                  <span className="text-sm">Analyzing images with AI...</span>
                 </div>
               )}
               {imagePreviews.length > 0 && (
