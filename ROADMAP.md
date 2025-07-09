@@ -21,6 +21,7 @@
   - [ ] Set up ESLint rules
   - [ ] Configure Prettier
   - [ ] Set up environment variables
+  - [x] Set up Vercel deployment
 
 ---
 
