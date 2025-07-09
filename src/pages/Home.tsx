@@ -54,6 +54,7 @@ const Home: React.FC = () => {
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imageAnalysisLoading, setImageAnalysisLoading] = useState(false);
+  const [imageAnalysisMessage, setImageAnalysisMessage] = useState<string | null>(null);
 
   // State for recipes
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -118,7 +119,7 @@ const Home: React.FC = () => {
       }));
     } catch (error) {
       console.error('Error analyzing image:', error);
-      // Return empty array if analysis fails - no more hardcoded data
+      // Return empty array if analysis fails
       return [];
     }
   };
@@ -158,12 +159,14 @@ const Home: React.FC = () => {
     
     // Analyze each uploaded image
     setImageAnalysisLoading(true);
+    setImageAnalysisMessage(null);
     
     for (const file of files) {
       try {
         const detectedIngredients = await analyzeImage(file);
         
         if (detectedIngredients.length === 0) {
+          setImageAnalysisMessage('No ingredients detected in this image. Please try another one.');
           console.log('No ingredients detected in image or analysis failed');
           // You could add a user notification here
         }
@@ -189,6 +192,7 @@ const Home: React.FC = () => {
         });
       } catch (error) {
         console.error('Error analyzing image:', error);
+        setImageAnalysisMessage('Failed to analyze image. Please try again.');
         // You could add a user notification here for failed analysis
       }
     }
@@ -676,6 +680,9 @@ const Home: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              )}
+              {imageAnalysisMessage && (
+                <p className="text-sm text-gray-500 mt-3">{imageAnalysisMessage}</p>
               )}
               
               {/* Generate Recipes from Images Button */}
