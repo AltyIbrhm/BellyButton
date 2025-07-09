@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
+import logo from './assets/logo.jpg';
 
 function App() {
   return (
@@ -13,11 +14,13 @@ function App() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">H</span>
-                </div>
+                <img 
+                  src={logo} 
+                  alt="HealthyBot Logo" 
+                  className="w-10 h-10 rounded-full object-cover shadow-md"
+                />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">HealthyBot</h1>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">HealthyBot</h1>
                   <p className="text-sm text-gray-600">Smart Recipe & Health Assistant</p>
                 </div>
               </div>

@@ -582,22 +582,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header with Logo */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center space-x-4 mb-4">
-          <img 
-            src={logo} 
-            alt="HealthyBot Logo" 
-            className="w-16 h-16 rounded-full object-cover shadow-lg border-4 border-gradient-to-r from-green-400 to-blue-500"
-          />
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-              HealthyBot
-            </h1>
-            <p className="text-gray-600 text-lg">Your AI Kitchen Assistant</p>
-          </div>
-        </div>
-      </div>
+
       {/* Dietary Restrictions Modal */}
       {showDietaryModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1006,11 +991,13 @@ const Home: React.FC = () => {
         {!chatOpen && (
           <button
             onClick={() => setChatOpen(true)}
-            className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+            className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center overflow-hidden"
           >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
+            <img 
+              src={logo} 
+              alt="Chat with HealthyBot" 
+              className="w-12 h-12 rounded-full object-cover"
+            />
           </button>
         )}
 
@@ -1020,9 +1007,11 @@ const Home: React.FC = () => {
             {/* Chat Header */}
             <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white p-4 rounded-t-lg flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold">H</span>
-                </div>
+                <img 
+                  src={logo} 
+                  alt="HealthyBot" 
+                  className="w-8 h-8 rounded-full object-cover"
+                />
                 <span className="font-semibold">HealthyBot Assistant</span>
               </div>
               <button
