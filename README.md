@@ -1,6 +1,6 @@
-# 🎯 BellyButton - Smart Meeting Point Finder
+# 🎯 HealthyBot - Smart Meeting Point Finder
 
-BellyButton is an intelligent web application that helps two people find the perfect meeting location by calculating the midpoint between their locations and suggesting nearby venues like restaurants, cafes, and parks.
+HealthyBot is an intelligent web application that helps two people find the perfect meeting location by calculating the midpoint between their locations and suggesting nearby venues like restaurants, cafes, and parks.
 
 ## ✨ Features
 
@@ -41,8 +41,8 @@ BellyButton is an intelligent web application that helps two people find the per
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/ParcelShield/BellyButton.git
-   cd BellyButton
+   git clone https://github.com/AltyIbrhm/HealthyBot.git
+   cd HealthyBot
    ```
 
 2. **Install dependencies**
@@ -160,4 +160,4 @@ If you have any questions or need help setting up the project, please open an is
 
 ---
 
-**Made with ❤️ for easier meetups and better planning!**
+**Made with ❤️ for healthier meetups and better planning!**
