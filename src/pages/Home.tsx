@@ -531,12 +531,22 @@ const Home: React.FC = () => {
     setChatLoading(true);
     
     try {
+      // Create context with fridge ingredients
+      const fridgeIngredientsList = fridgeIngredients.map(item => `${item.name} (${item.quantity})`).join(', ');
+      const dietaryContext = dietaryRestrictions.length > 0 ? `Dietary restrictions: ${dietaryRestrictions.join(', ')}. ` : '';
+      
+      const enhancedMessage = `${dietaryContext}User's fridge contains: ${fridgeIngredientsList || 'empty'}. User question: ${message}`;
+      
       const response = await fetch('http://localhost:3000/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ 
+          message: enhancedMessage,
+          fridgeIngredients: fridgeIngredients,
+          dietaryRestrictions: dietaryRestrictions
+        }),
       });
 
       if (!response.ok) {

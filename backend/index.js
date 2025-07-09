@@ -32,23 +32,36 @@ app.get('/api/dashboard', (req, res) => {
 app.post('/api/chat', async (req, res) => {
   try {
     const apiKey = process.env.OPENAI_API_KEY;
-    const { message } = req.body;
+    const { message, fridgeIngredients = [], dietaryRestrictions = [] } = req.body;
     if (!apiKey) {
       return res.status(400).json({ error: 'OPENAI_API_KEY not set in backend .env' });
     }
     if (!message) {
       return res.status(400).json({ error: 'No message provided' });
     }
+
+    // Create enhanced system prompt with fridge context
+    const fridgeList = fridgeIngredients.map(item => `${item.name} (${item.quantity})`).join(', ');
+    const dietaryList = dietaryRestrictions.length > 0 ? dietaryRestrictions.join(', ') : 'none';
+    
+    const systemPrompt = `You are HealthyBot, an AI kitchen assistant that helps users with healthy recipes and nutrition advice. 
+
+IMPORTANT CONTEXT:
+- User's fridge contains: ${fridgeList || 'empty'}
+- User's dietary restrictions: ${dietaryList}
+
+Provide personalized advice based on what's in their fridge. If they ask about recipes, suggest ones they can make with their available ingredients. If they ask about nutrition, consider their dietary restrictions. Be helpful, encouraging, and specific to their situation.`;
+    
     // Call OpenAI Chat API (gpt-3.5-turbo)
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: 'You are a helpful assistant.' },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: message },
         ],
-        max_tokens: 256,
+        max_tokens: 400,
       },
       {
         headers: {
